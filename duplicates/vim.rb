@@ -13,7 +13,7 @@ class Vim < Formula
     system "./configure", "--prefix=#{prefix}",
                           "--mandir=#{man}",
                           "--enable-gui=no",
-                          "--without-x",
+                          "--with-x",
                           "--disable-nls",
                           "--enable-multibyte",
                           "--with-tlib=ncurses",
