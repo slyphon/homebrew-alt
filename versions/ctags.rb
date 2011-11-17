@@ -5,7 +5,7 @@ class Ctags < Formula
   homepage 'http://ctags.sourceforge.net/'
   md5 'c00f82ecdcc357434731913e5b48630d'
 
-  head "git://github.com/lyosha/ctags-go.git"
+  head "git://github.com/slyphon/ctags-go.git"
 
   # true for both 5.8 and head
   fails_with_llvm "Resulting executable generates erroneous tag files", :build => 2335
