@@ -14,6 +14,12 @@ class Ruby < Formula
   # Stripping breaks dynamic linking
   skip_clean :all
 
+  keg_only <<-EOS.undent
+  This version of ruby will only be installed for library dependencies 
+
+  so there.
+  EOS
+
   def options
     [
       ["--with-suffix", "Add a 19 suffix to commands"],
@@ -47,6 +53,8 @@ class Ruby < Formula
             "--disable-debug",
             "--disable-dependency-tracking",
             "--enable-shared"]
+
+    args << '--disable-install-doc' unless ARGV.include? '--with-doc'
 
     args << "--program-suffix=19" if ARGV.include? "--with-suffix"
     args << "--with-arch=x86_64,i386" if ARGV.build_universal?
