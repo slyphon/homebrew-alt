@@ -14,6 +14,14 @@ class Ruby < Formula
   # Stripping breaks dynamic linking
   skip_clean :all
 
+  keg_only <<-EOS.undent
+    This ruby is only intended as a dependency for other things (specifically weechat)
+
+    so it's keg only.
+
+    so there.
+  EOS
+
   def options
     [
       ["--with-suffix", "Add a 19 suffix to commands"],
@@ -47,6 +55,9 @@ class Ruby < Formula
             "--disable-debug",
             "--disable-dependency-tracking",
             "--enable-shared"]
+
+    # don't build documentation if we're not going to install it
+    args << "--disable-install-doc" unless ARGV.include? "--with-doc"
 
     args << "--program-suffix=19" if ARGV.include? "--with-suffix"
     args << "--with-arch=x86_64,i386" if ARGV.build_universal?
