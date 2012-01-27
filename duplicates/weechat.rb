@@ -35,7 +35,6 @@ class Weechat < Formula
       "--disable-lua",
       "--disable-tcl",
       "--prefix=#{prefix}",
-#       "--disable-gnutls",
       "--disable-aspell",
       "--with-debug",
       "--with-ruby",
