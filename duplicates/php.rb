@@ -9,10 +9,10 @@ def postgres_installed?
 end
 
 class Php < Formula
-  url 'http://www.php.net/get/php-5.3.8.tar.bz2/from/this/mirror'
+  url 'http://www.php.net/get/php-5.3.9.tar.bz2/from/this/mirror'
   homepage 'http://php.net/'
-  md5 '704cd414a0565d905e1074ffdc1fadfb'
-  version '5.3.8'
+  md5 'dd3288ed5c08cd61ac5bf619cb357521'
+  version '5.3.9'
 
   # So PHP extensions don't report missing symbols
   skip_clean ['bin', 'sbin']
@@ -46,6 +46,7 @@ class Php < Formula
      ['--with-mariadb', 'Include MariaDB support'],
      ['--with-pgsql', 'Include PostgreSQL support'],
      ['--with-mssql', 'Include MSSQL-DB support'],
+     ['--with-cgi', 'Enable building of the CGI executable (implies --without-apache)'],
      ['--with-fpm', 'Enable building of the fpm SAPI executable (implies --without-apache)'],
      ['--without-apache', 'Build without shared Apache 2.0 Handler module'],
      ['--with-intl', 'Include internationalization support'],
@@ -113,8 +114,13 @@ class Php < Formula
       args.push "--enable-fpm"
     end
 
+    # Enable PHP CGI
+    if ARGV.include? '--with-cgi'
+      args.push "--enable-cgi"
+    end
+
     # Build Apache module by default
-    unless ARGV.include? '--with-fpm' or ARGV.include? '--without-apache'
+    unless ARGV.include? '--with-fpm' or ARGV.include? '--with-cgi' or ARGV.include? '--without-apache'
       args.push "--with-apxs2=/usr/sbin/apxs"
       args.push "--libexecdir=#{libexec}"
     end
@@ -162,6 +168,8 @@ class Php < Formula
     system "make install"
 
     etc.install "./php.ini-production" => "php.ini" unless File.exists? etc+"php.ini"
+    chmod_R 0775, lib+"php"
+    system bin+"pear", "config-set", "php_ini", etc+"php.ini"
   end
 
  def caveats; <<-EOS
@@ -174,10 +182,6 @@ To enable PHP in Apache add the following to httpd.conf and restart Apache:
 
 The php.ini file can be found in:
     #{etc}/php.ini
-
-'Fix' the default PEAR permissions and config:
-    chmod -R ug+w #{lib}/php
-    pear config-set php_ini #{etc}/php.ini
    EOS
  end
 end
