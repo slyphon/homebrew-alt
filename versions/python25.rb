@@ -15,7 +15,7 @@ The "site-packages" folder lives in the Cellar, under the "lib" folder
 for normal builds, and under the "Frameworks" folder for Framework builds.
 
 A .pth file is added to the Cellar site-packages that adds the corresponding
-HOMEBREW_PREFIX folder (/usr/local/lib/python2.6/site-packages by default)
+HOMEBREW_PREFIX folder (/usr/local/lib/python2.5/site-packages by default)
 to sys.path. Note that this alternate folder doesn't itself support .pth files.
 
 pip / distribute
@@ -41,10 +41,10 @@ def as_framework?
   (self.installed? and File.exists? prefix+"Frameworks/Python.framework") or build_framework?
 end
 
-class Python26 < Formula
-  url 'http://www.python.org/ftp/python/2.6.7/Python-2.6.7.tgz'
+class Python25 < Formula
+  url 'http://www.python.org/ftp/python/2.5.6/Python-2.5.6.tgz'
   homepage 'http://www.python.org/'
-  md5 'af474f85a3af69ea50438a2a48039d7d'
+  md5 'd1d9c83928561addf11d00b22a18ca50'
 
   depends_on 'sqlite' => :optional    # Prefer over OS X's older version
   depends_on 'readline' => :optional  # Prefer over OS X's libedit
@@ -65,16 +65,16 @@ class Python26 < Formula
     # The Cellar location of site-packages
     if as_framework?
       # If we're installed or installing as a Framework, then use that location.
-      return prefix+"Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages"
+      return prefix+"Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages"
     else
       # Otherwise, use just the lib path.
-      return lib+"python2.6/site-packages"
+      return lib+"python2.5/site-packages"
     end
   end
 
   def prefix_site_packages
     # The HOMEBREW_PREFIX location of site-packages
-    HOMEBREW_PREFIX+"lib/python2.6/site-packages"
+    HOMEBREW_PREFIX+"lib/python2.5/site-packages"
   end
 
   def validate_options
@@ -97,6 +97,12 @@ class Python26 < Formula
       args << "--enable-framework=#{prefix}/Frameworks"
     else
       args << "--enable-shared" unless ARGV.include? '--static'
+    end
+
+    if MacOS.prefer_64_bit?
+      args << "ARCHFLAGS='-arch x86_64'"
+    else
+      args << "ARCHFLAGS='-arch i386'"
     end
 
     system "./configure", *args
@@ -145,4 +151,9 @@ class Python26 < Formula
     s = framework_caveats + s if as_framework?
     return s
   end
+
+  def patches
+    { :p0 => ["https://github.com/collective/buildout.python/raw/master/src/python-2.5-darwin-10.6.patch"]}
+  end
+
 end

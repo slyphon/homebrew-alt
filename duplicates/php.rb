@@ -9,10 +9,16 @@ def postgres_installed?
 end
 
 class Php < Formula
-  url 'http://www.php.net/get/php-5.3.9.tar.bz2/from/this/mirror'
+  url 'http://www.php.net/get/php-5.3.10.tar.bz2/from/this/mirror'
   homepage 'http://php.net/'
-  md5 'dd3288ed5c08cd61ac5bf619cb357521'
-  version '5.3.9'
+  md5 '816259e5ca7d0a7e943e56a3bb32b17f'
+  version '5.3.10'
+
+  devel do
+    url 'http://downloads.php.net/stas/php-5.4.0RC8.tar.gz'
+    md5 'b659032842fcb495c6203738f2cf5e38'
+    version '5.4.0'
+  end
 
   # So PHP extensions don't report missing symbols
   skip_clean ['bin', 'sbin']
@@ -51,11 +57,16 @@ class Php < Formula
      ['--without-apache', 'Build without shared Apache 2.0 Handler module'],
      ['--with-intl', 'Include internationalization support'],
      ['--without-readline', 'Build without readline support'],
-     ['--with-gmp', 'Include GMP support']
+     ['--with-gmp', 'Include GMP support'],
+     ['--with-suhosin', 'Include Suhosin patch']
    ]
   end
 
-  def patches; DATA; end
+  def patches
+    p = [DATA]
+    p << "http://download.suhosin.org/suhosin-patch-5.3.9-0.9.10.patch.gz" if ARGV.include? '--with-suhosin'
+    return p
+  end
 
   def install
     args = [
@@ -109,13 +120,11 @@ class Php < Formula
 
     args.push "--with-gmp" if ARGV.include? '--with-gmp'
 
-    # Enable PHP FPM
-    if ARGV.include? '--with-fpm'
+    if ARGV.include? '--with-fpm' and ARGV.include? '--with-cgi'
+      raise "Cannot specify more than one executable to build."
+    elsif ARGV.include? '--with-fpm'
       args.push "--enable-fpm"
-    end
-
-    # Enable PHP CGI
-    if ARGV.include? '--with-cgi'
+    elsif ARGV.include? '--with-cgi'
       args.push "--enable-cgi"
     end
 
@@ -125,7 +134,7 @@ class Php < Formula
       args.push "--libexecdir=#{libexec}"
     end
 
-    if ARGV.include? '--with-mysql'
+    if ARGV.include? '--with-mysql' or ARGV.include? '--with-mariadb'
       args.push "--with-mysql-sock=/tmp/mysql.sock"
       args.push "--with-mysqli=mysqlnd"
       args.push "--with-mysql=mysqlnd"
@@ -150,7 +159,7 @@ class Php < Formula
 
     system "./configure", *args
 
-    unless ARGV.include? '--without-apache'
+    unless ARGV.include? '--without-apache' or ARGV.include? '--with-cgi' or ARGV.include? '--with-fpm'
       # Use Homebrew prefix for the Apache libexec folder
       inreplace "Makefile",
         "INSTALL_IT = $(mkinstalldirs) '$(INSTALL_ROOT)/usr/libexec/apache2' && $(mkinstalldirs) '$(INSTALL_ROOT)/private/etc/apache2' && /usr/sbin/apxs -S LIBEXECDIR='$(INSTALL_ROOT)/usr/libexec/apache2' -S SYSCONFDIR='$(INSTALL_ROOT)/private/etc/apache2' -i -a -n php5 libs/libphp5.so",
